@@ -7,21 +7,23 @@ const io = require('socket.io')(http, {
     methods: ['GET', 'POST'], // Métodos aceitos pela url
 }});
 
-// app.use(cors())
-
 app.get('/', (req, res) => {
   return res.json({ ok: true });
 });
 
-const PORT = 3002;
+const PORT = 3001;
+let messages = [
+  { username: 'Fulano de tal', message: 'Hello world' },
+];
 
 io.on('connection', (socket) => {
-  console.log(`novo usuário conectado! ${socket.id}`);
-  
-  socket.on('disconnect', () => {
-    console.log(`usuário ${socket.id} saiu`);
-  });
+  console.log(`${socket.id} conectou-se`);
+  socket.emit('joined', messages);
 
+  socket.on('send', (message) => {
+    messages = [message, ...messages];
+    io.emit('new-message', messages);
+  });
 });
 
-http.listen(PORT, () => console.log('App listening on PORT %s', PORT));
+http.listen(PORT, () => console.log(`App listening on PORT ${PORT}`));
